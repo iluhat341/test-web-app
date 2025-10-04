@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Мой Mini App</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --hint: #6b7280;
+      --link: #0ea5e9;
+      --button: #0ea5e9; 
+      --button-text: #ffffff;
+      --card: #f3f4f6;
+      --border: #e5e7eb;
+      --radius: 14px;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+
+    /* Телеграм-тема перекрывает дефолт */
+    .tg-theme {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
+    .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 56px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .title { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+    .sub { color: var(--hint); margin: 0 0 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; padding: 12px 16px; border-radius: 12px;
+      background: var(--button); color: var(--button-text); font-weight: 600; cursor: pointer;
+    }
+    .btn[disabled] { opacity: .6; cursor: not-allowed; }
+    .input, .select {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: #fff; color: var(--text);
+    }
+    .grid { display: grid; gap: 12px; }
+    .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    a { color: var(--link); text-decoration: none; }
+  </style>
+</head>
+<body class="tg-theme">
+  <div class="container">
+    <div class="card">
+      <h1 class="title">Привет из мини-приложения</h1>
+      <p class="sub">Тема и цвета адаптируются под Telegram автоматически.</p>
+
+      <div class="grid">
+        <input class="input" id="name" placeholder="Ваше имя" />
+        <div class="grid cols-2">
+          <select class="select" id="service">
+            <option value="" disabled selected>Выберите услугу</option>
+            <option value="consult">Консультация</option>
+            <option value="calc">Калькулятор</option>
+            <option value="request">Заявка</option>
+          </select>
+          <button class="btn" id="send">Отправить</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="status" style="display:none;"></div>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+
+    // 1) Инициализация
+    tg.ready();
+    tg.expand(); // полноэкранный где можно
+
+    // 2) Привязка темы к CSS
+    function applyTheme(p = tg.themeParams || {}) {
+      const map = {
+        '--bg': p.bg_color,
+        '--text': p.text_color,
+        '--hint': p.hint_color,
+        '--link': p.link_color,
+        '--button': p.button_color,
+        '--button-text': p.button_text_color,
+        '--card': p.secondary_bg_color, // карточки на вторичном фоне
+        '--border': p.section_separator_color
+      };
+      Object.entries(map).forEach(([k, v]) => { if (v) document.documentElement.style.setProperty(k, v); });
+      document.body.classList.add('tg-theme');
+    }
+    applyTheme();
+    tg.onEvent('themeChanged', () => applyTheme(tg.themeParams));
+
+    // 3) MainButton и BackButton Телеги (нативные, красиво)
+    function setMainButton(text = 'Отправить') {
+      tg.MainButton.setText(text);
+      tg.MainButton.enable();
+      tg.MainButton.show();
+    }
+    setMainButton();
+
+    tg.BackButton.show();
+    tg.BackButton.onClick(() => {
+      tg.HapticFeedback.impactOccurred('soft');
+      tg.close(); // или своя логика «назад»
+    });
+
+    // 4) Сабмит: валидация + запрос в n8n
+    const btn = document.getElementById('send');
+    const statusEl = document.getElementById('status');
+
+    async function submit() {
+      const name = document.getElementById('name').value?.trim();
+      const service = document.getElementById('service').value;
+
+      if (!name || !service) {
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showAlert('Заполните имя и выберите услугу');
+        return;
+      }
+
+      btn.disabled = true; tg.MainButton.showProgress();
+
+      try {
+        const res = await fetch('https://YOUR-N8N-URL/webhook/miniapp/form', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            initData: tg.initData,
+            payload: { name, service }
+          })
+        });
+
+        const data = await res.json();
+        tg.HapticFeedback.notificationOccurred('success');
+        tg.showPopup({ title: 'Готово', message: data?.message || 'Заявка отправлена', buttons:[{type:'ok'}] });
+
+        statusEl.style.display = 'block';
+        statusEl.textContent = `Статус: ${data?.status || 'ok'} • ID: ${data?.id || '—'}`;
+      } catch (e) {
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showAlert('Ошибка сети. Попробуйте ещё раз.');
+      } finally {
+        btn.disabled = false; tg.MainButton.hideProgress();
+      }
+    }
+
+    btn.addEventListener('click', submit);
+    tg.MainButton.onClick(submit);
+  </script>
+</body>
+</html>
