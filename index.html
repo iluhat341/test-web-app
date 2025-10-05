@@ -1,3 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Партнер Программиста - Чат с LLM</title>
+    <style>
+        /* Общие стили для темной темы */
+        :root {
+            --dark-bg: #1e1e2f;       /* Очень темный фон */
+            --dark-module: #27293d;   /* Чуть светлее для модулей/панелей */
+            --accent-color: #5d5dff;  /* Яркий акцентный цвет (синий/фиолетовый) */
+            --text-color: #f0f0f0;    /* Светлый текст */
+            --user-bubble: #5d5dff;   /* Цвет сообщения пользователя */
+            --llm-bubble: #3a3f5a;    /* Цвет сообщения LLM */
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Контейнер чата (Модуль) */
+        .chat-container {
+            width: 100%;
+            max-width: 600px; /* Оптимальная ширина для мини-приложения */
+            height: 100%;
+            max-height: 800px;
+            background-color: var(--dark-module);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Красивая тень */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header для названия */
+        .chat-header {
+            padding: 15px;
+            background-color: var(--dark-bg);
+            border-bottom: 1px solid #3a3f5a;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Список сообщений (История чата) */
+        .message-list {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Прокрутка для истории чата */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Стилизация полосы прокрутки для красоты */
+        .message-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .message-list::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        /* Отдельное сообщение (Пузырь) */
+        .message {
+            display: flex;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Сообщение пользователя (Справа) */
+        .message.user {
+            margin-left: auto;
+            justify-content: flex-end;
+        }
+
+        .message.user .message-bubble {
+            background-color: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 4px; /* Небольшой скос для стиля */
+        }
+
+        /* Сообщение LLM/Системы (Слева) */
+        .message.llm {
+            margin-right: auto;
+            justify-content: flex-start;
+        }
+
+        .message.llm .message-bubble {
+            background-color: var(--llm-bubble);
+            color: var(--text-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Область ввода */
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #3a3f5a;
+            background-color: var(--dark-module);
+            display: flex;
+        }
+
+        .input-area form {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+
+        /* Поле ввода текста */
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-size: 1em;
+            resize: none; /* Отключаем изменение размера */
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #user-input:focus {
+            outline: 2px solid var(--accent-color);
+        }
+
+        /* Кнопка отправки */
+        #send-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            flex-shrink: 0; /* Не сжимать кнопку */
+        }
+
+        #send-button:hover {
+            background-color: #7a7aff;
+        }
+
+        #send-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Партнер Программиста (LLM)
+    </div>
+
+    <div class="message-list" id="message-list">
+        <div class="message llm">
+            <div class="message-bubble">Привет! Я ваш помощник по программированию. Опишите задачу, и я приступлю к работе!</div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <form id="chat-form">
+            <textarea
+                id="user-input"
+                placeholder="Напишите сообщение..."
+                rows="1"
+                required
+            ></textarea>
+            <button type="submit" id="send-button">Отправить</button>
+        </form>
+    </div>
+</div>
+
 <script>
     // URL вашего webhook
     const WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
@@ -147,3 +338,6 @@
     window.addEventListener('load', resetInputHeight);
 
 </script>
+
+</body>
+</html>
