@@ -190,8 +190,11 @@
 </div>
 
 <script>
-    // URL вашего webhook
+    // ... в самом начале скрипта, до всех функций
     const WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
+    
+    // Получаем initData. Если мы не в среде Telegram, это будет null/undefined
+    const initData = window.Telegram?.WebApp?.initData || null;
 
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -247,7 +250,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ text: message })
+                body: JSON.stringify({ text: message, initData: initData })
             });
 
             // 2. УДАЛЕНИЕ индикатора загрузки
