@@ -1,163 +1,301 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Мой Mini App</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --text: #111111;
-      --hint: #6b7280;
-      --link: #0ea5e9;
-      --button: #0ea5e9; 
-      --button-text: #ffffff;
-      --card: #f3f4f6;
-      --border: #e5e7eb;
-      --radius: 14px;
-      --shadow: 0 8px 24px rgba(0,0,0,.08);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Партнер Программиста - Чат с LLM</title>
+    <style>
+        /* Общие стили для темной темы */
+        :root {
+            --dark-bg: #1e1e2f;       /* Очень темный фон */
+            --dark-module: #27293d;   /* Чуть светлее для модулей/панелей */
+            --accent-color: #5d5dff;  /* Яркий акцентный цвет (синий/фиолетовый) */
+            --text-color: #f0f0f0;    /* Светлый текст */
+            --user-bubble: #5d5dff;   /* Цвет сообщения пользователя */
+            --llm-bubble: #3a3f5a;    /* Цвет сообщения LLM */
+        }
 
-    /* Телеграм-тема перекрывает дефолт */
-    .tg-theme {
-      background: var(--bg);
-      color: var(--text);
-    }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
 
-    * { box-sizing: border-box; }
-    body { margin: 0; font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
-    .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 56px; }
+        /* Контейнер чата (Модуль) */
+        .chat-container {
+            width: 100%;
+            max-width: 600px; /* Оптимальная ширина для мини-приложения */
+            height: 100%;
+            max-height: 800px;
+            background-color: var(--dark-module);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Красивая тень */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      margin: 16px 0;
-    }
-    .title { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
-    .sub { color: var(--hint); margin: 0 0 12px; }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      border: 0; padding: 12px 16px; border-radius: 12px;
-      background: var(--button); color: var(--button-text); font-weight: 600; cursor: pointer;
-    }
-    .btn[disabled] { opacity: .6; cursor: not-allowed; }
-    .input, .select {
-      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
-      border-radius: 12px; background: #fff; color: var(--text);
-    }
-    .grid { display: grid; gap: 12px; }
-    .grid.cols-2 { grid-template-columns: 1fr 1fr; }
-    a { color: var(--link); text-decoration: none; }
-  </style>
+        /* Header для названия */
+        .chat-header {
+            padding: 15px;
+            background-color: var(--dark-bg);
+            border-bottom: 1px solid #3a3f5a;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Список сообщений (История чата) */
+        .message-list {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto; /* Прокрутка для истории чата */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Стилизация полосы прокрутки для красоты */
+        .message-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .message-list::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        /* Отдельное сообщение (Пузырь) */
+        .message {
+            display: flex;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Сообщение пользователя (Справа) */
+        .message.user {
+            margin-left: auto;
+            justify-content: flex-end;
+        }
+
+        .message.user .message-bubble {
+            background-color: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 4px; /* Небольшой скос для стиля */
+        }
+
+        /* Сообщение LLM/Системы (Слева) */
+        .message.llm {
+            margin-right: auto;
+            justify-content: flex-start;
+        }
+
+        .message.llm .message-bubble {
+            background-color: var(--llm-bubble);
+            color: var(--text-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Область ввода */
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #3a3f5a;
+            background-color: var(--dark-module);
+            display: flex;
+        }
+
+        .input-area form {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+        }
+
+        /* Поле ввода текста */
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-size: 1em;
+            resize: none; /* Отключаем изменение размера */
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #user-input:focus {
+            outline: 2px solid var(--accent-color);
+        }
+
+        /* Кнопка отправки */
+        #send-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            flex-shrink: 0; /* Не сжимать кнопку */
+        }
+
+        #send-button:hover {
+            background-color: #7a7aff;
+        }
+
+        #send-button:active {
+            transform: scale(0.98);
+        }
+    </style>
 </head>
-<body class="tg-theme">
-  <div class="container">
-    <div class="card">
-      <h1 class="title">Привет из мини-приложения</h1>
-      <p class="sub">Тема и цвета адаптируются под Telegram автоматически.</p>
+<body>
 
-      <div class="grid">
-        <input class="input" id="name" placeholder="Ваше имя" />
-        <div class="grid cols-2">
-          <select class="select" id="service">
-            <option value="" disabled selected>Выберите услугу</option>
-            <option value="consult">Консультация</option>
-            <option value="calc">Калькулятор</option>
-            <option value="request">Заявка</option>
-          </select>
-          <button class="btn" id="send">Отправить</button>
-        </div>
-      </div>
+<div class="chat-container">
+    <div class="chat-header">
+        Партнер Программиста (LLM)
     </div>
 
-    <div class="card" id="status" style="display:none;"></div>
-  </div>
+    <div class="message-list" id="message-list">
+        <div class="message llm">
+            <div class="message-bubble">Привет! Я ваш помощник по программированию. Опишите задачу, и я приступлю к работе!</div>
+        </div>
+    </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    const tg = window.Telegram.WebApp;
+    <div class="input-area">
+        <form id="chat-form">
+            <textarea
+                id="user-input"
+                placeholder="Напишите сообщение..."
+                rows="1"
+                required
+            ></textarea>
+            <button type="submit" id="send-button">Отправить</button>
+        </form>
+    </div>
+</div>
 
-    // 1) Инициализация
-    tg.ready();
-    tg.expand(); // полноэкранный где можно
+<script>
+    // URL вашего webhook, куда будут отправляться сообщения
+    const WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
 
-    // 2) Привязка темы к CSS
-    function applyTheme(p = tg.themeParams || {}) {
-      const map = {
-        '--bg': p.bg_color,
-        '--text': p.text_color,
-        '--hint': p.hint_color,
-        '--link': p.link_color,
-        '--button': p.button_color,
-        '--button-text': p.button_text_color,
-        '--card': p.secondary_bg_color, // карточки на вторичном фоне
-        '--border': p.section_separator_color
-      };
-      Object.entries(map).forEach(([k, v]) => { if (v) document.documentElement.style.setProperty(k, v); });
-      document.body.classList.add('tg-theme');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const messageList = document.getElementById('message-list');
+
+    /**
+     * Добавляет новое сообщение в историю чата.
+     * @param {string} text - Текст сообщения.
+     * @param {string} sender - Отправитель ('user' или 'llm').
+     */
+    function addMessageToChat(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.classList.add('message-bubble');
+        bubbleDiv.textContent = text;
+
+        messageDiv.appendChild(bubbleDiv);
+        messageList.appendChild(messageDiv);
+
+        // Прокручиваем список сообщений вниз
+        messageList.scrollTop = messageList.scrollHeight;
     }
-    applyTheme();
-    tg.onEvent('themeChanged', () => applyTheme(tg.themeParams));
 
-    // 3) MainButton и BackButton Телеги (нативные, красиво)
-    function setMainButton(text = 'Отправить') {
-      tg.MainButton.setText(text);
-      tg.MainButton.enable();
-      tg.MainButton.show();
+    /**
+     * Отправляет сообщение на webhook.
+     * @param {string} message - Текст сообщения пользователя.
+     */
+    async function sendToWebhook(message) {
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                // Ваш webhook может ожидать данные в определенном формате (например, JSON).
+                // Я предполагаю, что ему нужен JSON с полем "text".
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: message })
+            });
+
+            if (!response.ok) {
+                // Если статус ответа не 200-299, сообщаем об ошибке
+                console.error(`Ошибка при отправке: ${response.status} ${response.statusText}`);
+                // Можно добавить системное сообщение в чат
+                addMessageToChat('Ошибка: Не удалось отправить сообщение на сервер.', 'llm');
+            } else {
+                // Сервер принял сообщение. Ответ LLM придет в Telegram.
+                console.log('Сообщение успешно отправлено на webhook.');
+            }
+
+        } catch (error) {
+            console.error('Ошибка сети или при выполнении fetch:', error);
+            addMessageToChat('Ошибка: Проблема с соединением.', 'llm');
+        }
     }
-    setMainButton();
 
-    tg.BackButton.show();
-    tg.BackButton.onClick(() => {
-      tg.HapticFeedback.impactOccurred('soft');
-      tg.close(); // или своя логика «назад»
+    /**
+     * Обработчик отправки формы.
+     */
+    chatForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Останавливаем стандартную отправку формы
+
+        const messageText = userInput.value.trim();
+
+        if (messageText) {
+            // 1. Добавляем сообщение пользователя в чат
+            addMessageToChat(messageText, 'user');
+
+            // 2. Отправляем его на webhook
+            sendToWebhook(messageText);
+
+            // 3. Очищаем поле ввода
+            userInput.value = '';
+            // Возвращаем фокус на поле ввода
+            userInput.focus();
+        }
     });
 
-    // 4) Сабмит: валидация + запрос в n8n
-    const btn = document.getElementById('send');
-    const statusEl = document.getElementById('status');
+    // Дополнительная функция: отправка по Enter
+    userInput.addEventListener('keydown', function(event) {
+        // Если нажата клавиша Enter и не нажат Shift
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Предотвращаем стандартный перенос строки
+            chatForm.dispatchEvent(new Event('submit')); // Отправляем форму
+        }
+    });
 
-    async function submit() {
-      const name = document.getElementById('name').value?.trim();
-      const service = document.getElementById('service').value;
+    // Настраиваем поле ввода для автоматического изменения высоты
+    userInput.addEventListener('input', function() {
+        this.style.height = 'auto'; // Сброс высоты
+        // Устанавливаем высоту, которая равна высоте содержимого, но не более 5 строк
+        const maxHeight = parseFloat(getComputedStyle(this).lineHeight) * 5;
+        if (this.scrollHeight < maxHeight) {
+            this.style.height = this.scrollHeight + 'px';
+        } else {
+            this.style.height = maxHeight + 'px';
+        }
+    });
 
-      if (!name || !service) {
-        tg.HapticFeedback.notificationOccurred('error');
-        tg.showAlert('Заполните имя и выберите услугу');
-        return;
-      }
+    // Инициализация высоты поля ввода
+    userInput.style.height = userInput.scrollHeight + 'px';
 
-      btn.disabled = true; tg.MainButton.showProgress();
+</script>
 
-      try {
-        const res = await fetch('https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            initData: tg.initData,
-            payload: { name, service }
-          })
-        });
-
-        const data = await res.json();
-        tg.HapticFeedback.notificationOccurred('success');
-        tg.showPopup({ title: 'Готово', message: data?.message || 'Заявка отправлена', buttons:[{type:'ok'}] });
-
-        statusEl.style.display = 'block';
-        statusEl.textContent = `Статус: ${data?.status || 'ok'} • ID: ${data?.id || '—'}`;
-      } catch (e) {
-        tg.HapticFeedback.notificationOccurred('error');
-        tg.showAlert('Ошибка сети. Попробуйте ещё раз.');
-      } finally {
-        btn.disabled = false; tg.MainButton.hideProgress();
-      }
-    }
-
-    btn.addEventListener('click', submit);
-    tg.MainButton.onClick(submit);
-  </script>
 </body>
 </html>
