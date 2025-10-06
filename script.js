@@ -1,16 +1,19 @@
-// Находим нужные элементы на странице
+// Находим все нужные элементы на странице
 const chatBox = document.getElementById('chat-box');
 const messageForm = document.getElementById('message-form');
 const messageInput = document.getElementById('message-input');
-
-// !!! ВАЖНО: Замените эту строку на ваш URL из n8n !!!
-const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
-
-// ... (предыдущий код без изменений) ...
-
-// Находим объект Telegram Web App, который предоставляет сам Телеграм
 const tg = window.Telegram.WebApp;
 
+// !!! ВАЖНО: Не забудьте вставить ваш URL из n8n !!!
+const N8N_WEBHOOK_URL = 'https://your-n8n-instance.com/webhook/your-webhook-id';
+
+// Приветственное сообщение при загрузке
+window.addEventListener('load', () => {
+    addMessage('Привет! Я ваш AI-ассистент. Чем могу помочь?', 'ai-message');
+    tg.ready(); // Сообщаем Телеграму, что приложение готово
+});
+
+// Обработчик отправки формы
 messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -19,40 +22,74 @@ messageForm.addEventListener('submit', async function(event) {
 
     addMessage(userMessage, 'user-message');
     messageInput.value = '';
+    showTypingIndicator(true); // Показываем индикатор
 
     try {
-        // Отправляем сообщение и initData на вебхук n8n
         const response = await fetch(N8N_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // 👇 ВОТ ИЗМЕНЕНИЕ: Добавляем initData в тело запроса
             body: JSON.stringify({
                 message: userMessage,
-                initData: tg.initData // Получаем "паспорт" пользователя
+                initData: tg.initData
             }),
         });
 
         if (!response.ok) {
-            throw new Error('Ошибка сети или сервера n8n.');
+            throw new Error(`Ошибка сети: ${response.status}`);
         }
 
         const data = await response.json();
-        const aiMessage = data.reply;
-
-        addMessage(aiMessage, 'ai-message');
+        addMessage(data.reply, 'ai-message');
 
     } catch (error) {
         console.error('Произошла ошибка:', error);
-        addMessage('Ой, что-то пошло не так. Попробуйте еще раз.', 'ai-message');
+        addMessage('Произошла ошибка. Пожалуйста, попробуйте снова.', 'ai-message');
+    } finally {
+        showTypingIndicator(false); // Всегда скрываем индикатор в конце
     }
 });
 
-// ... (функция addMessage без изменений) ...
-
+/**
+ * Функция для добавления нового сообщения в чат
+ * @param {string} text - Текст сообщения
+ * @param {string} className - Класс для стилизации ('user-message' или 'ai-message')
+ */
 function addMessage(text, className) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', className);
     messageElement.textContent = text;
     chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    scrollToBottom();
+}
+
+/**
+ * Функция для показа/скрытия индикатора загрузки
+ * @param {boolean} show - true, чтобы показать, false, чтобы скрыть
+ */
+function showTypingIndicator(show) {
+    let indicator = document.querySelector('.typing-indicator');
+    if (show) {
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.classList.add('message', 'ai-message', 'typing-indicator');
+            indicator.innerHTML = '<span></span><span></span><span></span>';
+            chatBox.appendChild(indicator);
+            indicator.classList.add('visible'); // Добавляем класс для плавного появления
+            scrollToBottom();
+        }
+    } else {
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+}
+
+/**
+ * Плавная прокрутка чата вниз
+ */
+function scrollToBottom() {
+    chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+    });
 }
