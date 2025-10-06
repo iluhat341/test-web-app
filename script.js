@@ -5,7 +5,7 @@ const messageInput = document.getElementById('message-input');
 const tg = window.Telegram.WebApp;
 
 // !!! ВАЖНО: Не забудьте вставить ваш URL из n8n !!!
-const N8N_WEBHOOK_URL = 'https://your-n8n-instance.com/webhook/your-webhook-id';
+const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
 
 // Приветственное сообщение при загрузке
 window.addEventListener('load', () => {
@@ -93,3 +93,4 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
+
