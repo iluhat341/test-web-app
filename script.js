@@ -2,10 +2,25 @@
 const chatBox = document.getElementById('chat-box');
 const messageForm = document.getElementById('message-form');
 const messageInput = document.getElementById('message-input');
+const clearChatBtn = document.getElementById('clear-chat-btn'); // Находим новую кнопку
 const tg = window.Telegram.WebApp;
 
 // Ваш URL-адрес
 const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
+
+// --- НОВАЯ ФУНКЦИЯ: Обработчик для кнопки очистки ---
+clearChatBtn.addEventListener('click', () => {
+    // Удаляем все сообщения из чата
+    chatBox.innerHTML = '';
+    
+    // Добавляем приветственное сообщение заново
+    addMessage('Контекст очищен. Чем могу помочь?', 'ai-message');
+    
+    // Примечание: Это очищает только видимую историю в приложении.
+    // Для полной очистки памяти у OpenAI, вам нужно будет
+    // реализовать управление сессиями на стороне n8n.
+    // Но для большинства случаев этого достаточно.
+});
 
 // Приветственное сообщение при загрузке
 window.addEventListener('load', () => {
@@ -19,13 +34,12 @@ window.addEventListener('load', () => {
 messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    // --- ВОТ ИСПРАВЛЕНИЕ ---
-    // Было: message.value | Стало: messageInput.value
     const userMessage = messageInput.value.trim();
     if (userMessage === '') return;
 
     addMessage(userMessage, 'user-message');
     messageInput.value = '';
+    
     showTypingIndicator(true);
 
     try {
@@ -94,5 +108,4 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
-
 
