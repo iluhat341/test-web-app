@@ -139,10 +139,10 @@ body {
     box-sizing: border-box;
     width: 100%;
 
-    /* --- Стили для Glassmorphism --- */
-    background: rgba(30, 30, 30, 0.6); /* Полупрозрачный темный фон */
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    /* --- СТИЛИ ДЛЯ ПОЛУПРОЗРАЧНОГО ФОНА --- */
+    /* Убираем backdrop-filter и используем более плотный, но все еще прозрачный фон. */
+    /* Этот эффект работает на всех устройствах. */
+    background: rgba(40, 40, 40, 0.85); /* Более плотный полупрозрачный фон */
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 
     /* --- Позиционирование внизу экрана --- */
@@ -191,5 +191,6 @@ body {
 #message-form button svg {
     color: white;
 }
+
 
 
