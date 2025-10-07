@@ -4,7 +4,7 @@ const messageForm = document.getElementById('message-form');
 const messageInput = document.getElementById('message-input');
 const tg = window.Telegram.WebApp;
 
-// !!! ВАЖНО: Не забудьте вставить ваш URL из n8n !!!
+// Ваш URL-адрес
 const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9-73f76347d058';
 
 // Приветственное сообщение при загрузке
@@ -19,12 +19,14 @@ window.addEventListener('load', () => {
 messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    const userMessage = message.value.trim();
+    // --- ВОТ ИСПРАВЛЕНИЕ ---
+    // Было: message.value | Стало: messageInput.value
+    const userMessage = messageInput.value.trim();
     if (userMessage === '') return;
 
     addMessage(userMessage, 'user-message');
     messageInput.value = '';
-    showTypingIndicator(true);
+    showTypINGIndicator(true);
 
     try {
         const response = await fetch(N8N_WEBHOOK_URL, {
@@ -92,3 +94,4 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
+
