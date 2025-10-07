@@ -9,6 +9,8 @@ const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9
 
 // Приветственное сообщение при загрузке
 window.addEventListener('load', () => {
+    tg.setHeaderColor('secondary_bg_color');
+    
     addMessage('Привет! Я ваш AI-ассистент. Чем могу помочь?', 'ai-message');
     tg.ready(); // Сообщаем Телеграму, что приложение готово
 });
@@ -93,4 +95,5 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
+
 
