@@ -26,7 +26,7 @@ messageForm.addEventListener('submit', async function(event) {
 
     addMessage(userMessage, 'user-message');
     messageInput.value = '';
-    showTypINGIndicator(true);
+    showTypingIndicator(true);
 
     try {
         const response = await fetch(N8N_WEBHOOK_URL, {
@@ -94,4 +94,5 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
+
 
