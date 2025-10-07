@@ -186,3 +186,38 @@ body {
     color: white;
 }
 
+/* --- НОВЫЕ СТИЛИ ДЛЯ ШАПКИ И КНОПКИ ОЧИСТКИ --- */
+#chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--surface-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+#chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#clear-chat-btn {
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#clear-chat-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--primary-text-color);
+}
+
