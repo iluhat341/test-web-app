@@ -9,11 +9,22 @@ const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9
 
 // Приветственное сообщение при загрузке
 window.addEventListener('load', () => {
-    tg.setBackgroundColor(tg.themeParams.secondary_bg_color);
+    // --- ИСПРАВЛЕНИЕ v3: Проверка версии и прямой метод ---
+    try {
+        // Проверяем, поддерживает ли клиент установку прозрачного фона (версия 6.9+)
+        if (tg.isVersionAtLeast('6.9')) {
+            tg.setBackgroundColor('transparent');
+        } else {
+            // Для старых версий Telegram используем предыдущий метод как запасной
+            tg.setBackgroundColor(tg.themeParams.secondary_bg_color);
+        }
+    } catch (e) {
+        console.error("Ошибка при установке фона:", e);
+    }
     
-    // 2. Раскрываем приложение на весь экран для лучшего вида
+    // Раскрываем приложение на весь экран для лучшего вида
     tg.expand();
-    
+
     addMessage('Привет! Я ваш AI-ассистент. Чем могу помочь?', 'ai-message');
     tg.ready(); // Сообщаем Телеграму, что приложение готово
 });
@@ -27,7 +38,7 @@ messageForm.addEventListener('submit', async function(event) {
 
     addMessage(userMessage, 'user-message');
     messageInput.value = '';
-    showTypingIndicator(true); // Показываем индикатор
+    showTypingIndicator(true);
 
     try {
         const response = await fetch(N8N_WEBHOOK_URL, {
@@ -50,14 +61,12 @@ messageForm.addEventListener('submit', async function(event) {
         console.error('Произошла ошибка:', error);
         addMessage('Произошла ошибка. Пожалуйста, попробуйте снова.', 'ai-message');
     } finally {
-        showTypingIndicator(false); // Всегда скрываем индикатор в конце
+        showTypingIndicator(false);
     }
 });
 
 /**
  * Функция для добавления нового сообщения в чат
- * @param {string} text - Текст сообщения
- * @param {string} className - Класс для стилизации ('user-message' или 'ai-message')
  */
 function addMessage(text, className) {
     const messageElement = document.createElement('div');
@@ -69,7 +78,6 @@ function addMessage(text, className) {
 
 /**
  * Функция для показа/скрытия индикатора загрузки
- * @param {boolean} show - true, чтобы показать, false, чтобы скрыть
  */
 function showTypingIndicator(show) {
     let indicator = document.querySelector('.typing-indicator');
@@ -79,7 +87,7 @@ function showTypingIndicator(show) {
             indicator.classList.add('message', 'ai-message', 'typing-indicator');
             indicator.innerHTML = '<span></span><span></span><span></span>';
             chatBox.appendChild(indicator);
-            indicator.classList.add('visible'); // Добавляем класс для плавного появления
+            indicator.classList.add('visible');
             scrollToBottom();
         }
     } else {
@@ -98,6 +106,4 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
-
-
 
