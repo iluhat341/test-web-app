@@ -23,12 +23,23 @@
     --accent-color-end: #00C6FF;
 }
 
+html, body {
+    background-color: transparent !important;
+}
+
+/* Общие стили для темной темы */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--background-color);
-    color: var(--primary-text-color);
+    color: #e0e0e0;
     margin: 0;
-    overscroll-behavior: none;
+    padding: 0; /* Убираем отступы, чтобы контейнер занимал весь экран */
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Предотвращаем случайную прокрутку */
 }
 
 /* Кастомный скроллбар */
@@ -47,24 +58,25 @@ body {
 #chat-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    background-color: var(--surface-color);
-    box-sizing: border-box;
-    /* ИЗМЕНЕНИЕ: Добавляем position: relative, чтобы позиционировать форму ввода относительно контейнера */
-    position: relative;
+    height: 100vh; /* Занимает всю высоту */
+    width: 100vw;  /* Занимает всю ширину */
+    max-width: 100%;
+    background-color: transparent; /* Фон самого контейнера тоже прозрачный */
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative; /* Важно для позиционирования формы */
 }
 
 #chat-box {
     flex-grow: 1;
-    /* ИЗМЕНЕНИЕ: Увеличиваем нижний отступ, чтобы последнее сообщение не перекрывалось формой ввода */
-    padding: 20px 15px 100px 15px;
+    padding: 20px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* ИЗМЕНЕНИЕ: Этот хак исправляет баги с backdrop-filter в некоторых браузерах при скролле */
-    clip-path: inset(0);
+    /* Важный отступ снизу, чтобы форма не перекрывала последнее сообщение */
+    padding-bottom: 100px; 
 }
 
 /* Стили сообщений */
@@ -122,22 +134,22 @@ body {
 /* --- ГЛАВНЫЕ ИЗМЕНЕНИЯ ЗДЕСЬ --- */
 /* Форма ввода */
 #message-form {
-    /* ИЗМЕНЕНИЕ: Позиционируем форму поверх чата внизу экрана */
+    display: flex;
+    padding: 10px 15px;
+    box-sizing: border-box;
+    width: 100%;
+
+    /* --- Стили для Glassmorphism --- */
+    background: rgba(30, 30, 30, 0.6); /* Полупрозрачный темный фон */
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    /* --- Позиционирование внизу экрана --- */
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    
-    display: flex;
-    padding: 10px 15px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Адаптация под iPhone */
-    gap: 10px;
-
-    /* --- ЭФФЕКТ "ЖИДКОГО СТЕКЛА" --- */
-    background: rgba(36, 36, 36, 0.7); /* Полупрозрачный фон */
-    backdrop-filter: blur(18px); /* Основное свойство для размытия */
-    -webkit-backdrop-filter: blur(18px); /* Для Safari */
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #message-input {
@@ -179,4 +191,5 @@ body {
 #message-form button svg {
     color: white;
 }
+
 
