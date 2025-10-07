@@ -9,22 +9,8 @@ const N8N_WEBHOOK_URL = 'https://mrxbussiness.ru/webhook/2212b739-8e9b-4181-b5f9
 
 // Приветственное сообщение при загрузке
 window.addEventListener('load', () => {
-    // --- ИСПРАВЛЕНИЕ v3: Проверка версии и прямой метод ---
-    try {
-        // Проверяем, поддерживает ли клиент установку прозрачного фона (версия 6.9+)
-        if (tg.isVersionAtLeast('6.9')) {
-            tg.setBackgroundColor('transparent');
-        } else {
-            // Для старых версий Telegram используем предыдущий метод как запасной
-            tg.setBackgroundColor(tg.themeParams.secondary_bg_color);
-        }
-    } catch (e) {
-        console.error("Ошибка при установке фона:", e);
-    }
-    
     // Раскрываем приложение на весь экран для лучшего вида
     tg.expand();
-
     addMessage('Привет! Я ваш AI-ассистент. Чем могу помочь?', 'ai-message');
     tg.ready(); // Сообщаем Телеграму, что приложение готово
 });
@@ -33,7 +19,7 @@ window.addEventListener('load', () => {
 messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    const userMessage = messageInput.value.trim();
+    const userMessage = message.value.trim();
     if (userMessage === '') return;
 
     addMessage(userMessage, 'user-message');
@@ -106,4 +92,3 @@ function scrollToBottom() {
         behavior: 'smooth'
     });
 }
-
